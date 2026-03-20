@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "QuickDock",
-    "description": "Minimalist Notion-like Dark Theme Quickscrum Extension",
+    "description": "Your centralized hub for Quickscrum tasks. Navigate, search, and manage your tickets and stories faster than the web app without losing focus.",
     "version": "1.0",
     "action": {},
     "permissions": [

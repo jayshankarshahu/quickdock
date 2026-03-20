@@ -7,6 +7,10 @@ export function useQuickscrum() {
     const [error, setError] = useState(null);
     const [progress, setProgress] = useState(null);
 
+    const [searchLimit, setSearchLimit] = useState(12);
+    const [limitHit, setLimitHit] = useState(false);
+    const [emptyMessage, setEmptyMessage] = useState('');
+
     const [currentMonth, setCurrentMonth] = useState(() => {
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -16,6 +20,12 @@ export function useQuickscrum() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterProject, setFilterProject] = useState('');
     const [filterType, setFilterType] = useState('');
+
+    useEffect(() => {
+        chrome.storage.sync.get(['searchLimit'], (result) => {
+            if (result.searchLimit) setSearchLimit(Number(result.searchLimit));
+        });
+    }, []);
 
     const loadMonthData = useCallback(async (monthStr, forceRefresh = false) => {
         setLoading(true);
@@ -52,19 +62,57 @@ export function useQuickscrum() {
         }
     }, [currentMonth, loadedMonths, loadMonthData]);
 
-    const loadPreviousMonth = useCallback(() => {
-        if (loading) return;
-        const [yearStr, monthStr] = currentMonth.split('-');
-        let year = parseInt(yearStr);
-        let month = parseInt(monthStr);
-        month -= 1;
-        if (month === 0) {
-            month = 12;
-            year -= 1;
+    const loadPreviousMonth = useCallback(async () => {
+        if (loading || limitHit) return;
+
+        setLoading(true);
+        let current = currentMonth;
+        let foundItems = false;
+        let consecutiveEmpty = 0;
+
+        try {
+            while (!foundItems && consecutiveEmpty < searchLimit) {
+                const [yearStr, monthStr] = current.split('-');
+                let year = parseInt(yearStr);
+                let month = parseInt(monthStr);
+                month -= 1;
+                if (month === 0) {
+                    month = 12;
+                    year -= 1;
+                }
+                const prevMonth = `${year}-${String(month).padStart(2, '0')}`;
+                current = prevMonth;
+
+                const monthItems = await fetchAndCacheMonth(prevMonth, setProgress, false);
+
+                if (monthItems.length > 0) {
+                    foundItems = true;
+                    setItems(prev => {
+                        const newItemsMap = new Map();
+                        prev.forEach(item => newItemsMap.set(item.id, item));
+                        monthItems.forEach(item => newItemsMap.set(item.id, item));
+                        return Array.from(newItemsMap.values()).sort((a, b) => b.assignedDate - a.assignedDate);
+                    });
+                } else {
+                    consecutiveEmpty += 1;
+                }
+
+                setLoadedMonths(prev => new Set(prev).add(prevMonth));
+                setCurrentMonth(prevMonth);
+            }
+
+            if (consecutiveEmpty >= searchLimit) {
+                setLimitHit(true);
+                setEmptyMessage(`Stopped searching: No tickets found for ${searchLimit} consecutive months. You can change this limit in settings.`);
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+            setProgress(null);
         }
-        const prevMonth = `${year}-${String(month).padStart(2, '0')}`;
-        setCurrentMonth(prevMonth);
-    }, [currentMonth, loading]);
+    }, [currentMonth, loading, limitHit, searchLimit]);
 
     const refresh = useCallback(() => {
         const d = new Date();
@@ -106,6 +154,8 @@ export function useQuickscrum() {
         loading,
         error,
         progress,
+        limitHit,
+        emptyMessage,
         refresh,
         loadPreviousMonth,
         searchQuery, setSearchQuery,

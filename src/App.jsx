@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Settings, RefreshCw, Mail, Search, X } from 'lucide-react';
+import { Settings, RefreshCw, Search, X } from 'lucide-react';
 import { useQuickscrum } from './hooks/useQuickscrum';
 import TicketCard from './components/TicketCard';
 import './index.css';
 
 function App() {
   const {
-    items, loading, error, progress, refresh, loadPreviousMonth,
+    items, loading, error, limitHit, emptyMessage,
+    refresh, loadPreviousMonth,
     searchQuery, setSearchQuery, filterProject, setFilterProject,
     filterType, setFilterType, availableProjects, clearFilters
   } = useQuickscrum();
@@ -27,7 +28,7 @@ function App() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && !loading) {
+        if (entries[0].isIntersecting && !loading && !limitHit) {
           loadPreviousMonth();
         }
       },
@@ -38,7 +39,7 @@ function App() {
       observer.observe(observerTarget.current);
     }
     return () => observer.disconnect();
-  }, [loading, loadPreviousMonth]);
+  }, [loading, limitHit, loadPreviousMonth]);
 
   const openOptions = () => {
     if (chrome.runtime.openOptionsPage) {
@@ -59,13 +60,63 @@ function App() {
     chrome.tabs.create({ url });
   };
 
+  const renderItemsWithSeparators = () => {
+    const elements = [];
+    let currentMonthGroup = null;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const date = new Date(item.assignedDate);
+      const monthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+      if (monthName !== currentMonthGroup) {
+        let gapText = '';
+        if (currentMonthGroup !== null) {
+          const prevDate = new Date(items[i - 1].assignedDate);
+          const monthsDiff = (prevDate.getFullYear() - date.getFullYear()) * 12 + (prevDate.getMonth() - date.getMonth());
+
+          if (monthsDiff > 1) {
+            if (monthsDiff === 2) {
+              const skippedDate = new Date(prevDate);
+              skippedDate.setMonth(prevDate.getMonth() - 1);
+              gapText = `(Skipped ${skippedDate.toLocaleString('default', { month: 'long', year: 'numeric' })})`;
+            } else {
+              gapText = `(${monthsDiff - 1} empty months skipped)`;
+            }
+          }
+        }
+
+        elements.push(
+          <div key={`sep-${monthName}`} style={{
+            margin: '24px 0 12px 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {monthName} {gapText && <span style={{ fontWeight: 400, fontStyle: 'italic', textTransform: 'none' }}>{gapText}</span>}
+            </span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
+          </div>
+        );
+        currentMonthGroup = monthName;
+      }
+
+      elements.push(
+        <TicketCard key={`${item.id}-${i}`} item={item} onClick={handleItemClick} />
+      );
+    }
+    return elements;
+  };
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-primary)' }}>
       {/* Header Sticky */}
       <div style={{ padding: '16px 16px 12px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', zIndex: 10 }}>
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Mail size={18} color="var(--accent-blue)" /> QuickDock
+            QuickDock
           </h2>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button className="notion-btn icon-btn" onClick={refresh} title="Refresh Current Month">
@@ -129,25 +180,26 @@ function App() {
           </div>
         )}
 
-        {items.map((item, idx) => (
-          <TicketCard key={`${item.id}-${idx}`} item={item} onClick={handleItemClick} />
-        ))}
+        {renderItemsWithSeparators()}
 
         {/* Loading / Infinite Scroll Target */}
         <div ref={observerTarget} style={{ padding: '20px 0', textAlign: 'center' }}>
           {loading ? (
             <div className="skeleton-container">
-              {progress ? (
-                <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '12px' }}>
-                  Loading {progress.month}... {progress.total > 0 ? `(${progress.processed}/${progress.total})` : ''}
-                </div>
-              ) : null}
+              <div style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '12px' }}>
+                Searching for older assignments...
+              </div>
               <div className="skeleton-card"></div>
               <div className="skeleton-card"></div>
             </div>
+          ) : limitHit ? (
+            <div style={{ color: 'var(--text-secondary)', fontSize: '13px', textAlign: 'center', marginTop: '10px', padding: '12px', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
+              {emptyMessage}
+              {items.length === 0 && <div style={{ marginTop: '8px' }}>No assignments found at all.</div>}
+            </div>
           ) : items.length === 0 && !error ? (
-            <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-              No assignments found.
+            <div style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '20px' }}>
+              No assignments found yet. Scroll to search older months.
             </div>
           ) : null}
         </div>
