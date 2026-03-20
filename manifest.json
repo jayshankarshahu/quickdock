@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Quickscrum Viewer",
+    "name": "QuickDock",
     "description": "Minimalist Notion-like Dark Theme Quickscrum Extension",
     "version": "1.0",
     "action": {},

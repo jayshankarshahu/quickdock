@@ -1,9 +1,10 @@
-export function parseQuickscrumEmail(htmlString) {
+export function parseQuickscrumEmail(htmlString, assignedDate) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
 
     let ticket = null;
     let story = null;
+    let project = null;
 
     const paragraphs = doc.querySelectorAll('p');
     for (const p of paragraphs) {
@@ -11,29 +12,45 @@ export function parseQuickscrumEmail(htmlString) {
 
         // Look for ticket (subitem)
         if (text.includes('Assigned to subitem')) {
-            // e.g. "You have been successfully Assigned to subitem DE#6917 - Admin : Some of the module..."
             const match = text.match(/Assigned to subitem\s*(DE#\d+)\s*-\s*(.*)/);
             if (match) {
                 ticket = {
                     id: match[1],
                     title: match[2].trim(),
-                    type: 'ticket'
+                    type: 'ticket',
+                    assignedDate
                 };
             }
         }
 
         // Look for story (workitem)
         if (text.includes('in workitem:')) {
-            // e.g. "in workitem: ST#1461 - [Admin + Mobile] Sensitive Information Masking..."
             const match = text.match(/in workitem:\s*(ST#\d+)\s*-\s*(.*)/);
             if (match) {
                 story = {
                     id: match[1],
                     title: match[2].trim(),
-                    type: 'story'
+                    type: 'story',
+                    assignedDate
                 };
             }
         }
+
+        // Look for project
+        if (text.includes('in Project:')) {
+            const match = text.match(/in Project:\s*(.*)/);
+            if (match) {
+                project = match[1].trim();
+            }
+        }
+    }
+
+    if (ticket) {
+        if (project) ticket.project = project;
+        if (story) ticket.parentStory = story.id;
+    }
+    if (story && project) {
+        story.project = project;
     }
 
     return { ticket, story };

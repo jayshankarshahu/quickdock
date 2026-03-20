@@ -35,7 +35,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar for sleek UI */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -54,7 +54,6 @@ body {
   background: var(--text-secondary);
 }
 
-/* Global focus styles */
 :focus-visible {
   outline: 2px solid var(--accent-blue);
   outline-offset: 2px;
@@ -89,6 +88,27 @@ body {
   background-color: var(--accent-blue-hover);
 }
 
+.notion-btn.icon-btn {
+  padding: 6px;
+}
+
+.notion-btn.small {
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.notion-btn.text-only {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 4px;
+}
+
+.notion-btn.text-only:hover {
+  color: var(--text-primary);
+  background: transparent;
+}
+
 .notion-input {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -102,6 +122,59 @@ body {
 }
 
 .notion-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-secondary);
+}
+
+.pl-32 {
+  padding-left: 32px !important;
+}
+
+.clear-search {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-search:hover {
+  color: var(--text-primary);
+}
+
+.notion-select {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 4px 8px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239B9B9B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+.notion-select:focus {
   outline: none;
   border-color: var(--accent-blue);
 }
@@ -141,6 +214,36 @@ body {
   color: var(--accent-green);
 }
 
+.id-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color var(--transition-speed);
+}
+
+.copy-trigger {
+  cursor: pointer;
+}
+
+.copy-icon {
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+  color: var(--text-secondary);
+}
+
+.copy-trigger:hover {
+  background-color: var(--bg-hover);
+}
+
+.copy-trigger:hover .copy-icon {
+  opacity: 1;
+}
+
 @keyframes spin {
   100% {
     transform: rotate(360deg);
@@ -149,4 +252,29 @@ body {
 
 .spinning {
   animation: spin 1s linear infinite;
+}
+
+/* Skeleton Loaders */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton-card {
+  height: 80px;
+  background: var(--bg-secondary);
+  background-image: linear-gradient(90deg,
+      var(--bg-secondary) 0px,
+      var(--bg-hover) 40px,
+      var(--bg-secondary) 80px);
+  background-size: 800px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: var(--border-radius);
+  margin-bottom: 12px;
+  border: 1px solid var(--border-color);
 }

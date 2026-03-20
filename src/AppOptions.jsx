@@ -25,7 +25,7 @@ export default function AppOptions() {
     };
 
     const checkAuth = () => {
-        chrome.identity.getAuthToken({ interactive: true }, (token) => {
+        chrome.identity.getAuthToken({ interactive: true }, () => {
             if (chrome.runtime.lastError) {
                 alert('Authentication failed: ' + chrome.runtime.lastError.message);
             } else {

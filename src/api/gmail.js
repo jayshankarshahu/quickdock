@@ -10,32 +10,6 @@ export async function getAuthToken() {
     });
 }
 
-export async function fetchQuickscrumEmails() {
-    const token = await getAuthToken();
-    const query = "from:no-reply@quickscrum.com";
-
-    // 1. Fetch message IDs
-    const searchUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=20`;
-    const response = await fetch(searchUrl, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await response.json();
-
-    if (!data?.messages) return [];
-
-    // 2. Fetch full message payload for each ID
-    const emails = [];
-    for (const msg of data.messages) {
-        const msgUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`;
-        const msgRes = await fetch(msgUrl, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const msgData = await msgRes.json();
-        emails.push(msgData);
-    }
-    return emails;
-}
-
 export function extractHtmlBody(message) {
     let body = '';
 

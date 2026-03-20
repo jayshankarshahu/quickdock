@@ -1,42 +1,117 @@
-import { useState, useCallback } from 'react';
-import { fetchQuickscrumEmails, extractHtmlBody } from '../api/gmail';
-import { parseQuickscrumEmail } from '../api/parser';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { fetchAndCacheMonth } from '../api/storage';
 
 export function useQuickscrum() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [progress, setProgress] = useState(null);
 
-    const loadItems = useCallback(async () => {
+    const [currentMonth, setCurrentMonth] = useState(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
+    const [loadedMonths, setLoadedMonths] = useState(new Set());
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterProject, setFilterProject] = useState('');
+    const [filterType, setFilterType] = useState('');
+
+    const loadMonthData = useCallback(async (monthStr, forceRefresh = false) => {
         setLoading(true);
         setError(null);
-        try {
-            const emails = await fetchQuickscrumEmails();
-            const newItems = [];
-            const seenIds = new Set();
+        setProgress({ total: 0, processed: 0, month: monthStr });
 
-            for (const email of emails) {
-                const html = extractHtmlBody(email);
-                if (html) {
-                    const { ticket, story } = parseQuickscrumEmail(html);
-                    if (ticket && !seenIds.has(ticket.id)) {
-                        newItems.push(ticket);
-                        seenIds.add(ticket.id);
-                    }
-                    if (story && !seenIds.has(story.id)) {
-                        newItems.push(story);
-                        seenIds.add(story.id);
-                    }
+        try {
+            const monthItems = await fetchAndCacheMonth(monthStr, (stats) => {
+                setProgress(stats);
+            }, forceRefresh);
+
+            setItems(prev => {
+                const newItemsMap = new Map();
+                if (!forceRefresh) {
+                    prev.forEach(item => newItemsMap.set(item.id, item));
                 }
-            }
-            setItems(newItems);
+                monthItems.forEach(item => newItemsMap.set(item.id, item));
+                return Array.from(newItemsMap.values()).sort((a, b) => b.assignedDate - a.assignedDate);
+            });
+
+            setLoadedMonths(prev => new Set(prev).add(monthStr));
         } catch (err) {
             console.error(err);
-            setError(err.message || 'Failed to fetch items. Make sure you are authenticated.');
+            setError(err.message || 'Failed to fetch items. Check API limits or authentication.');
         } finally {
             setLoading(false);
+            setProgress(null);
         }
     }, []);
 
-    return { items, loading, error, refresh: loadItems };
+    useEffect(() => {
+        if (!loadedMonths.has(currentMonth)) {
+            loadMonthData(currentMonth);
+        }
+    }, [currentMonth, loadedMonths, loadMonthData]);
+
+    const loadPreviousMonth = useCallback(() => {
+        if (loading) return;
+        const [yearStr, monthStr] = currentMonth.split('-');
+        let year = parseInt(yearStr);
+        let month = parseInt(monthStr);
+        month -= 1;
+        if (month === 0) {
+            month = 12;
+            year -= 1;
+        }
+        const prevMonth = `${year}-${String(month).padStart(2, '0')}`;
+        setCurrentMonth(prevMonth);
+    }, [currentMonth, loading]);
+
+    const refresh = useCallback(() => {
+        const d = new Date();
+        const thisMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        loadMonthData(thisMonth, true);
+    }, [loadMonthData]);
+
+    const clearFilters = useCallback(() => {
+        setSearchQuery('');
+        setFilterProject('');
+        setFilterType('');
+    }, []);
+
+    const filteredItems = useMemo(() => {
+        return items.filter(item => {
+            if (filterProject && item.project !== filterProject) return false;
+            if (filterType && item.type !== filterType) return false;
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                const matchesTitle = item.title?.toLowerCase().includes(q);
+                const matchesId = item.id?.toLowerCase().includes(q);
+                const matchesProject = item.project?.toLowerCase().includes(q);
+                return matchesTitle || matchesId || matchesProject;
+            }
+            return true;
+        });
+    }, [items, searchQuery, filterProject, filterType]);
+
+    const availableProjects = useMemo(() => {
+        const projects = new Set();
+        items.forEach(item => {
+            if (item.project) projects.add(item.project);
+        });
+        return Array.from(projects).sort();
+    }, [items]);
+
+    return {
+        items: filteredItems,
+        loading,
+        error,
+        progress,
+        refresh,
+        loadPreviousMonth,
+        searchQuery, setSearchQuery,
+        filterProject, setFilterProject,
+        filterType, setFilterType,
+        availableProjects,
+        clearFilters
+    };
 }
