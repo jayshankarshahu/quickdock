@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "QuickDock",
-    "description": "Your centralized hub for Quickscrum tasks. Navigate, search, and manage your tickets and stories faster than the web app without losing focus.",
+    "description": "Navigate, search, and manage Quickscrum tickets and stories instantly. A faster, centralized hub right in your browser.",
     "version": "1.0",
     "action": {},
     "permissions": [
