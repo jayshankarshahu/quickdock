@@ -3,7 +3,14 @@
     "name": "QuickDock",
     "description": "Navigate, search, and manage Quickscrum tickets and stories instantly. A faster, centralized hub right in your browser.",
     "version": "1.0",
-    "action": {},
+    "action": {
+        "default_title": "QuickDock",
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
+    },
     "permissions": [
         "storage",
         "sidePanel",
@@ -15,15 +22,20 @@
             "https://www.googleapis.com/auth/gmail.readonly"
         ]
     },
-    "options_ui": {
-        "page": "options.html",
-        "open_in_tab": true
+    "background": {
+        "service_worker": "src/background.js",
+        "type": "module"
     },
     "side_panel": {
         "default_path": "index.html"
     },
-    "background": {
-        "service_worker": "src/background.js",
-        "type": "module"
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
+    },
+    "icons": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
     }
 }
