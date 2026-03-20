@@ -1,0 +1,29 @@
+{
+    "manifest_version": 3,
+    "name": "Quickscrum Viewer",
+    "description": "Minimalist Notion-like Dark Theme Quickscrum Extension",
+    "version": "1.0",
+    "action": {},
+    "permissions": [
+        "storage",
+        "sidePanel",
+        "identity"
+    ],
+    "oauth2": {
+        "client_id": "211800515099-khgneucf8f8lll07jln5ffe8javbl6jh.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/gmail.readonly"
+        ]
+    },
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
+    },
+    "side_panel": {
+        "default_path": "index.html"
+    },
+    "background": {
+        "service_worker": "src/background.js",
+        "type": "module"
+    }
+}
