@@ -1,6 +1,6 @@
-export async function getAuthToken() {
+export async function getAuthToken(interactive = false) {
     return new Promise((resolve, reject) => {
-        chrome.identity.getAuthToken({ interactive: true }, function (token) {
+        chrome.identity.getAuthToken({ interactive }, function (token) {
             if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
             } else {
@@ -36,7 +36,6 @@ export function extractHtmlBody(message) {
     if (body) {
         const b64 = body.replace(/-/g, '+').replace(/_/g, '/');
         try {
-            // Decode base64 to Unicode string
             return decodeURIComponent(escape(atob(b64)));
         } catch (e) {
             console.error('Error decoding email body:', e);

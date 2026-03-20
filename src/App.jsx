@@ -28,7 +28,7 @@ function App() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && !loading && !limitHit) {
+        if (entries[0].isIntersecting && !loading && !limitHit && !error) {
           loadPreviousMonth();
         }
       },
@@ -39,7 +39,7 @@ function App() {
       observer.observe(observerTarget.current);
     }
     return () => observer.disconnect();
-  }, [loading, limitHit, loadPreviousMonth]);
+  }, [loading, limitHit, error, loadPreviousMonth]);
 
   const openOptions = () => {
     if (chrome.runtime.openOptionsPage) {
@@ -176,7 +176,12 @@ function App() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }} id="scroll-container">
         {error && (
           <div style={{ padding: '12px', backgroundColor: 'rgba(190, 82, 75, 0.1)', color: 'var(--accent-red)', border: '1px solid var(--accent-red)', borderRadius: '6px', marginBottom: '16px', fontSize: '13px' }}>
-            {error}
+            <div style={{ marginBottom: '8px' }}>{error}</div>
+            {error.includes('Authentication') && (
+              <button className="notion-btn primary small" onClick={() => chrome.tabs.create({ url: chrome.runtime.getURL('options.html') })}>
+                Open Auth Settings
+              </button>
+            )}
           </div>
         )}
 

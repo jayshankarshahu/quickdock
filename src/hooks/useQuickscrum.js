@@ -27,7 +27,7 @@ export function useQuickscrum() {
         });
     }, []);
 
-    const loadMonthData = useCallback(async (monthStr, forceRefresh = false) => {
+    const loadMonthData = useCallback(async (monthStr, forceRefresh = false, interactive = false) => {
         setLoading(true);
         setError(null);
         setProgress({ total: 0, processed: 0, month: monthStr });
@@ -35,7 +35,7 @@ export function useQuickscrum() {
         try {
             const monthItems = await fetchAndCacheMonth(monthStr, (stats) => {
                 setProgress(stats);
-            }, forceRefresh);
+            }, forceRefresh, interactive);
 
             setItems(prev => {
                 const newItemsMap = new Map();
@@ -49,7 +49,11 @@ export function useQuickscrum() {
             setLoadedMonths(prev => new Set(prev).add(monthStr));
         } catch (err) {
             console.error(err);
-            setError(err.message || 'Failed to fetch items. Check API limits or authentication.');
+            if (err.message === 'AuthFailed') {
+                setError('Authentication required. Please login to view your assignments.');
+            } else {
+                setError(err.message || 'Failed to fetch items. Check API limits or authentication.');
+            }
         } finally {
             setLoading(false);
             setProgress(null);
@@ -83,7 +87,7 @@ export function useQuickscrum() {
                 const prevMonth = `${year}-${String(month).padStart(2, '0')}`;
                 current = prevMonth;
 
-                const monthItems = await fetchAndCacheMonth(prevMonth, setProgress, false);
+                const monthItems = await fetchAndCacheMonth(prevMonth, setProgress, false, false);
 
                 if (monthItems.length > 0) {
                     foundItems = true;
@@ -107,7 +111,11 @@ export function useQuickscrum() {
             }
         } catch (err) {
             console.error(err);
-            setError(err.message);
+            if (err.message === 'AuthFailed') {
+                setError('Authentication required. Please login to view your assignments.');
+            } else {
+                setError(err.message);
+            }
         } finally {
             setLoading(false);
             setProgress(null);

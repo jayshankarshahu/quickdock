@@ -5,7 +5,7 @@ export async function clearAllCache() {
     await chrome.storage.local.clear();
 }
 
-export async function fetchAndCacheMonth(monthStr, onProgress, forceRefresh = false) {
+export async function fetchAndCacheMonth(monthStr, onProgress, forceRefresh = false, interactive = false) {
     if (!forceRefresh) {
         const cached = await chrome.storage.local.get(monthStr);
         if (cached[monthStr] && cached[monthStr].length > 0) {
@@ -15,14 +15,13 @@ export async function fetchAndCacheMonth(monthStr, onProgress, forceRefresh = fa
 
     let token;
     try {
-        token = await getAuthToken();
-    } catch (err) {
-        throw new Error("Authentication failed: " + err.message);
+        token = await getAuthToken(interactive);
+    } catch {
+        throw new Error("AuthFailed");
     }
 
     const stats = { total: 0, processed: 0, month: monthStr };
 
-    // Calculate dates
     const [year, month] = monthStr.split('-');
     const startDate = `${monthStr}-01`;
 
@@ -41,7 +40,6 @@ export async function fetchAndCacheMonth(monthStr, onProgress, forceRefresh = fa
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=500${pageToken ? '&pageToken=' + pageToken : ''}`;
             const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
             if (!res.ok) {
-                // Return gracefully if API limits hit temporarily, throw to show in UI
                 throw new Error(res.status === 429 ? "Google API rate limit exceeded." : "Failed to fetch message list.");
             }
             const data = await res.json();
@@ -102,12 +100,11 @@ export async function fetchAndCacheMonth(monthStr, onProgress, forceRefresh = fa
         }
 
         stats.processed += batch.length;
-        if (onProgress) onProgress(stats); // Notify UI of pagination processing
+        if (onProgress) onProgress(stats);
     }
 
     results.sort((a, b) => b.assignedDate - a.assignedDate);
 
-    // Save to storage
     const obj = {};
     obj[monthStr] = results;
     await chrome.storage.local.set(obj);
