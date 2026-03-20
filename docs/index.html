@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Best Practices -->
+    <title>QuickDock | The Ultimate Quickscrum Extension</title>
+    <meta name="description"
+        content="Navigate, search, and manage Quickscrum tickets and stories instantly. A faster, centralized hub right in your browser.">
+    <meta name="keywords" content="Quickscrum, Chrome Extension, Productivity, Task Management, Kanban">
+    <meta name="author" content="QuickDock">
+
+    <!-- Open Graph for Social Sharing -->
+    <meta property="og:title" content="QuickDock | The Ultimate Quickscrum Extension">
+    <meta property="og:description"
+        content="Navigate, search, and manage Quickscrum tickets and stories instantly. A faster, centralized hub right in your browser side panel.">
+    <meta property="og:image" content="assets/banner.png">
+    <meta property="og:type" content="website">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #111111;
+            --bg-card: #1E1E1E;
+            --text-main: #F3F4F6;
+            --text-sub: #9CA3AF;
+            --border: #333333;
+            --accent: #FFFFFF;
+            --font-display: 'Montserrat', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navbar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent);
+            color: #000000;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hero Section */
+        header {
+            text-align: center;
+            padding: 80px 0 60px 0;
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-sub);
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+        }
+
+        .hero-image {
+            width: 100%;
+            max-width: 900px;
+            border-radius: 16px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border);
+            margin-top: 60px;
+            transition: transform 0.3s ease;
+        }
+
+        .hero-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+        }
+
+        .feature-row {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+            margin-bottom: 120px;
+        }
+
+        .feature-row:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-text h2 {
+            font-family: var(--font-display);
+            font-size: 36px;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .feature-text p {
+            font-size: 18px;
+            color: var(--text-sub);
+        }
+
+        .feature-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        .feature-image img {
+            width: 100%;
+            max-width: 380px;
+            border-radius: 12px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px 0;
+            border-top: 1px solid var(--border);
+            color: var(--text-sub);
+        }
+
+        .footer-cta {
+            margin-top: -30px;
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 40px;
+            }
+
+            .feature-row {
+                flex-direction: column !important;
+                gap: 40px;
+                text-align: center;
+                margin-bottom: 80px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Navbar -->
+        <nav>
+            <div class="logo">QuickDock</div>
+            <a href="https://chromewebstore.google.com/detail/quickdock/nlhkalkejonjangodinpcpnabcfglhgg" class="btn"
+                target="_blank">Add to Chrome</a>
+        </nav>
+
+        <!-- Hero Section -->
+        <header>
+            <h1 class="hero-title">Your Workflow,<br>Centralized.</h1>
+            <p class="hero-subtitle">Navigate, search, and manage Quickscrum tickets and stories instantly. A faster,
+                centralized hub right in your browser.</p>
+            <a href="https://chromewebstore.google.com/detail/quickdock/nlhkalkejonjangodinpcpnabcfglhgg" class="btn"
+                target="_blank" style="padding: 16px 32px; font-size: 18px;">Install QuickDock Free</a>
+            <br>
+            <img src="assets/banner.png" alt="QuickDock Banner" class="hero-image">
+        </header>
+
+        <!-- Feature Walkthrough -->
+        <section class="features">
+
+            <div class="feature-row">
+                <div class="feature-text">
+                    <h2>Never Lose a Task Again.</h2>
+                    <p>A beautifully organized, intuitive monthly timeline of everything assigned to you. Get an entire
+                        breakdown of your workload cleanly formatted like a chat history.</p>
+                </div>
+                <div class="feature-image">
+                    <img src="assets/1.png" alt="Main Timeline View">
+                </div>
+            </div>
+
+            <div class="feature-row">
+                <div class="feature-text">
+                    <h2>Lightning-Fast Search.</h2>
+                    <p>Find what you need in milliseconds. The native search instantly filters tickets by their ID,
+                        Title, or Project completely locally—no clunky page reloads required.</p>
+                </div>
+                <div class="feature-image">
+                    <img src="assets/2.png" alt="Search Interface">
+                </div>
+            </div>
+
+            <div class="feature-row">
+                <div class="feature-text">
+                    <h2>Filter the Noise.</h2>
+                    <p>Absolute clarity at your fingertips. Rapidly narrow down your responsibilities across multiple
+                        active workspaces using intelligent one-click dropdown filters.</p>
+                </div>
+                <div class="feature-image">
+                    <img src="assets/3.png" alt="Filter Dropdowns">
+                </div>
+            </div>
+
+            <div class="feature-row">
+                <div class="feature-text">
+                    <h2>Seamless Infinite Scroll.</h2>
+                    <p>Effortlessly scroll back in time. QuickDock intelligently fetches your history on demand,
+                        skipping perfectly through empty gaps without hogging your computer's memory.</p>
+                </div>
+                <div class="feature-image">
+                    <img src="assets/4.png" alt="Loading Skeletons">
+                </div>
+            </div>
+
+            <div class="feature-row">
+                <div class="feature-text">
+                    <h2>Secure & Custom.</h2>
+                    <p>Completely customize URL routing templates to match your company's domain structure. Everything
+                        connects directly via Google OAuth to process data locally without tracking servers.</p>
+                </div>
+                <div class="feature-image">
+                    <img src="assets/5.png" alt="Settings Configuration">
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Pre-footer CTA -->
+        <div class="footer-cta">
+            <h2 style="font-family: var(--font-display); font-size: 32px; margin-bottom: 24px;">Ready to speed up your
+                workflow?</h2>
+            <a href="https://chromewebstore.google.com/detail/quickdock/nlhkalkejonjangodinpcpnabcfglhgg" class="btn"
+                target="_blank" style="padding: 16px 32px; font-size: 18px;">Add QuickDock to Chrome</a>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 QuickDock. Built for speed.</p>
+        </footer>
+    </div>
+
+</body>
+
+</html>
